@@ -1,0 +1,50 @@
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      driver-class-name: org.h2.Driver
+  #      schema: ${DB_SCHEMA}
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+  flyway:
+    validate-on-migrate: true
+  #    schemas: ${spring.datasource.hikari.schema}
+  kafka:
+    bootstrap-servers:
+      - localhost:9092
+    topic-name: order-topic
+    consumer:
+      group-id: order-group
+      client-id: order-client
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        string.json.trusted.packages: ru.sbrf.stock.exchange.service.worker
+        string.json.value.default.type: ru.sbrf.stock.exchange.service.worker.Worker.OrderKafkaMessage
+    #    listener:
+    #      concurrency: 3 # Количество потоков обработки сообщений (по вашему желанию)
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: 0
+      acks: all
+#      batch-size: 2
+logging:
+  level:
+    root: ERROR
+    ru.sbrf.stock.exchange: DEBUG
+app:
+  order-scheduler:
+    cron: 0 0/1 * * * ?
+    name: TaskScheduler_orderScheduler
