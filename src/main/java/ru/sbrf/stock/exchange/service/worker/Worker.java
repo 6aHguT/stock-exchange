@@ -50,6 +50,7 @@ public class Worker {
             var uuid = orderInfoService.create();
             try {
                 taskQueue.put(uuid);
+                Thread.sleep(RANDOM.nextInt(100, 200));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
