@@ -23,7 +23,6 @@ public class OrderInfoController {
         return new ResponseEntity<>(savedOrder, HttpStatus.CREATED);
     }
 
-    // Endpoint to update an existing order
     @PutMapping("/{id}/{status}")
     public ResponseEntity<UUID> updateOrder(@PathVariable UUID id, @PathVariable Status status) {
         return orderInfoService.update(id, status)

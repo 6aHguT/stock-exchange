@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import ru.sbrf.stock.exchange.domain.OrderKafkaMessage;
 import ru.sbrf.stock.exchange.domain.Status;
 import ru.sbrf.stock.exchange.service.OrderInfoService;
 
@@ -26,33 +26,7 @@ public class Worker {
     private static final Random RANDOM = new Random();
     private final OrderInfoService orderInfoService;
     private final RestTemplate restTemplate = new RestTemplate();
-
-//    public List<UUID> populate(int size) {
-//        var executorService = Executors.newWorkStealingPool();
-//        var tasks = IntStream.rangeClosed(1, size)
-//                .boxed()
-//                .map(i -> (Callable<UUID>) orderInfoService::create)
-//                .toList();
-//        List<Future<UUID>> futures = null;
-//        try {
-//            futures = executorService.invokeAll(tasks);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-//        executorService.shutdown();
-//
-//        return futures.stream()
-//                .map(future -> {
-//                    try {
-//                        return future.get();
-//                    } catch (InterruptedException | ExecutionException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                })
-//                .toList();
-//
-//    }
-    private final KafkaTemplate<String, OrderKafkaMessage> kafkaTemplate;
+    private final KafkaTemplate<Object, Object> kafkaTemplate;
     @Value("${spring.kafka.topic-name:order-topic}")
     private String topic;
 
@@ -60,8 +34,6 @@ public class Worker {
     @EventListener(ApplicationReadyEvent.class)
     public void run() {
         BlockingQueue<UUID> taskQueue = new LinkedBlockingQueue<>();
-
-
         IntStream.rangeClosed(1, 3)
                 .boxed()
                 .map(i -> new Thread(() -> produce(taskQueue)))
@@ -73,13 +45,11 @@ public class Worker {
 
     }
 
-    @Async
     public void produce(BlockingQueue<UUID> taskQueue) {
         for (int i = 0; i < 1000; i++) {
             var uuid = orderInfoService.create();
             try {
                 taskQueue.put(uuid);
-//                Thread.sleep(RANDOM.nextInt(100, 500)); // Небольшая задержка для демонстрации
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -99,24 +69,10 @@ public class Worker {
     }
 
     @SneakyThrows
-    @Async
     public void processTask(UUID uuid) {
-        for (int i = 0; i < RANDOM.nextInt(3); i++) {
-            restTemplate.put("http://localhost:8080/" + uuid + "/COMPLETED", null);
+        for (int i = 0; i < RANDOM.nextInt(8); i++) {
+            restTemplate.put("http://localhost:8080/" + uuid + "/COMPLETED_" + i, null);
         }
-        sendMessage(new OrderKafkaMessage(uuid, Status.COMPLETED));
-    }
-
-    @Async
-    public void sendMessage(OrderKafkaMessage message) {
-        new Thread(() -> {
-            var send = kafkaTemplate.send(topic, UUID.randomUUID().toString(), message);
-            var val = send.join();
-            System.out.println(val);
-        }).start();
-        System.out.println("message");
-    }
-
-    public record OrderKafkaMessage(UUID orderId, Status status) {
+        kafkaTemplate.send(topic, UUID.randomUUID().toString(), new OrderKafkaMessage(uuid, Status.COMPLETED_KAFKA));
     }
 }

@@ -14,7 +14,7 @@ import ru.sbrf.stock.exchange.repository.OrderHistoryRepository;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-class OrderHistoryServiceImpl {
+class OrderHistoryService {
 
     private final OrderHistoryRepository orderHistoryRepository;
 

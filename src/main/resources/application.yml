@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   h2:
     console:
       enabled: true
@@ -20,26 +22,21 @@ spring:
     validate-on-migrate: true
   #    schemas: ${spring.datasource.hikari.schema}
   kafka:
-    bootstrap-servers:
-      - localhost:9092
+    bootstrap-servers: localhost:9092
     topic-name: order-topic
     consumer:
       group-id: order-group
       client-id: order-client
       auto-offset-reset: latest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        string.json.trusted.packages: ru.sbrf.stock.exchange.service.worker
-        string.json.value.default.type: ru.sbrf.stock.exchange.service.worker.Worker.OrderKafkaMessage
-    #    listener:
-    #      concurrency: 3 # Количество потоков обработки сообщений (по вашему желанию)
+      keyDeserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      valueDeserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+    properties:
+      spring.json.value.default.type: ru.sbrf.stock.exchange.domain.OrderKafkaMessage
+      spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+      spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      retries: 0
-      acks: all
-#      batch-size: 2
 logging:
   level:
     root: ERROR

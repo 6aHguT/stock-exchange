@@ -18,7 +18,7 @@ public class OrderScheduler {
     @Scheduled(cron = "${app.order-scheduler.cron:0 0/1 * * * ?}")
     @SchedulerLock(name = "${app.order-scheduler.name}", lockAtLeastFor = "PT30S", lockAtMostFor = "PT2M")
     public void scheduledTask() {
-        log.debug("run task  {}", Thread.currentThread().getName());
+        log.debug("run scheduled task  {}", Thread.currentThread().getName());
         var cancelled = orderInfoService.cancelExpired();
         log.debug("cancelled, {}", cancelled);
     }
