@@ -11,7 +11,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@ToString(exclude = "order")
+@ToString
 public class OrderHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

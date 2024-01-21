@@ -15,6 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@ToString(exclude = "domainEvents")
 public class OrderInfo {
     @Transient
     private final Collection<DomainEvent> domainEvents = new LinkedList<>();

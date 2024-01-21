@@ -21,8 +21,8 @@ class OrderHistoryServiceImpl implements OrderHistoryService {
 
     @Override
     public void create(OrderInfo order, Status oldStatus, Status newStatus, LocalDateTime changed) {
-//        log.debug(changes.toString());
-        orderHistoryRepository.save(new OrderHistory(UUID.randomUUID(), order, oldStatus, newStatus, changed));
-//        log.debug(history.toString());
+        OrderHistory history = new OrderHistory(UUID.randomUUID(), order, oldStatus, newStatus, changed);
+        orderHistoryRepository.save(history);
+        log.debug(history.toString());
     }
 }
